@@ -42,7 +42,3 @@ services:
       - LIDAR_UPLOAD_DIR=/data/uploads
       - LIDAR_CONVERTED_DIR=/data/converted
       - LIDAR_POLL_INTERVAL=5
-    deploy:
-      resources:
-        limits:
-          memory: 4096M
