@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -12,10 +13,9 @@ class JobOut(BaseModel):
     status: str
     progress: float
     error: str | None
-    started_at: str | None
-    completed_at: str | None
-    class Config:
-        from_attributes = True
+    started_at: datetime | None
+    completed_at: datetime | None
+    model_config = {"from_attributes": True}
 
 @router.get("/{dataset_id}/job", response_model=JobOut)
 def get_job(dataset_id: str, db: Session = Depends(get_db)):
