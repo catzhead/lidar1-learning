@@ -5,7 +5,7 @@ import sys
 def check_potree_converter():
     """Verify PotreeConverter is available."""
     result = subprocess.run(
-        ["PotreeConverter", "--help"],
+        ["/usr/local/bin/PotreeConverter", "--help"],
         capture_output=True, text=True
     )
     if result.returncode != 0:

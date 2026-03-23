@@ -32,9 +32,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=potree-builder /build/PotreeConverter/build/PotreeConverter /usr/local/bin/
 COPY --from=potree-builder /opt/laszip/lib/ /usr/local/lib/
 COPY --from=potree-builder /build/PotreeConverter/resources/ /usr/local/share/PotreeConverter/resources/
-RUN ldconfig
+RUN ldconfig && \
+    ln -s /usr/local/share/PotreeConverter/resources /usr/local/bin/resources
 
 WORKDIR /app
+# PotreeConverter resolves resources/ relative to cwd
+RUN ln -s /usr/local/share/PotreeConverter/resources /app/resources
 COPY worker/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
