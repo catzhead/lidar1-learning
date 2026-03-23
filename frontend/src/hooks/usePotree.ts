@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { createViewer, loadPointCloud, PotreeViewer } from "../lib/potreeSetup";
 import { useAdaptivePerformance } from "./useAdaptivePerformance";
+import { usePerformanceStats } from "./usePerformanceStats";
 
 const FPS_WINDOW = 60;
 
@@ -19,6 +20,10 @@ export function usePotree(datasetId: string | null) {
   const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(0);
   const [pointBudget, setPointBudgetState] = useState(2_000_000);
+  const [glContext, setGlContext] = useState<WebGLRenderingContext | WebGL2RenderingContext | null>(null);
+  const perfStats = usePerformanceStats(glContext);
+  const perfStatsRef = useRef(perfStats);
+  perfStatsRef.current = perfStats;
 
   // Adaptive performance integration
   useAdaptivePerformance({
@@ -55,9 +60,12 @@ export function usePotree(datasetId: string | null) {
 
     const viewer = createViewer(container);
     viewerRef.current = viewer;
+    setGlContext(viewer.renderer.getContext());
 
     // Animation loop
     function animate() {
+      const ps = perfStatsRef.current as typeof perfStats & { _markFrameStart?: () => void; _markFrameEnd?: () => void };
+      ps._markFrameStart?.();
       const now = performance.now();
       const frameTimes = frameTimesRef.current;
       frameTimes.push(now);
@@ -82,6 +90,7 @@ export function usePotree(datasetId: string | null) {
         viewer.renderer
       );
       viewer.renderer.render(viewer.scene, viewer.camera);
+      ps._markFrameEnd?.();
 
       animFrameRef.current = requestAnimationFrame(animate);
     }
@@ -147,5 +156,5 @@ export function usePotree(datasetId: string | null) {
       });
   }, [datasetId]);
 
-  return { containerRef, loading, error, fps, pointBudget, updateSettings };
+  return { containerRef, loading, error, fps, pointBudget, updateSettings, perfStats };
 }

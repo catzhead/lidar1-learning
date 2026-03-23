@@ -5,7 +5,7 @@ interface ViewerCanvasProps {
 }
 
 export default function ViewerCanvas({ datasetId }: ViewerCanvasProps) {
-  const { containerRef, loading, error, fps, pointBudget } =
+  const { containerRef, loading, error, fps, pointBudget, perfStats } =
     usePotree(datasetId);
 
   const fpsColor = fps > 0 && fps < 40 ? "#ff4444" : "#44ff44";
@@ -95,6 +95,19 @@ export default function ViewerCanvas({ datasetId }: ViewerCanvasProps) {
         <span style={{ color: fpsColor }}>{fps} FPS</span>
         {" | "}
         {(pointBudget / 1_000_000).toFixed(1)}M pts
+        {perfStats.cpuTime > 0 && <>{" | "}CPU {perfStats.cpuTime}ms</>}
+        {perfStats.jsHeapUsed != null && (
+          <>{" | "}Mem {perfStats.jsHeapUsed}/{perfStats.jsHeapTotal}MB</>
+        )}
+        {perfStats.gpuMemUsed != null && (
+          <>{" | "}GPU {perfStats.gpuMemUsed}/{perfStats.gpuMemTotal}MB</>
+        )}
+        {perfStats.gpuRenderer && (
+          <>
+            <br />
+            <span style={{ color: "#666", fontSize: 10 }}>{perfStats.gpuRenderer}</span>
+          </>
+        )}
       </div>
     </div>
   );
