@@ -1,0 +1,46 @@
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-viewer: #0f0f23;
+  --text-primary: #e0e0e0;
+  --text-secondary: #999;
+  --accent: #4fc3f7;
+  --border: #334;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg-primary); color: var(--text-primary); font-family: system-ui, sans-serif; }
+
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+.toolbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-weight: 700; font-size: 15px; color: var(--accent); margin-right: 12px; }
+.btn-primary {
+  background: var(--accent); color: var(--bg-primary);
+  border: none; padding: 6px 14px; border-radius: 4px;
+  font-weight: 600; cursor: pointer; font-size: 12px;
+}
+.toolbar select {
+  background: var(--bg-primary); color: var(--text-primary);
+  border: 1px solid var(--border); padding: 5px 10px;
+  border-radius: 4px; font-size: 12px;
+}
+
+.main { display: flex; flex: 1; overflow: hidden; }
+
+.sidebar {
+  width: 240px; background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; flex-shrink: 0;
+}
+
+.viewer {
+  flex: 1; background: var(--bg-viewer);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+}
