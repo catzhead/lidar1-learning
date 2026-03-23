@@ -17,11 +17,19 @@ export default function ScenePanel({ dataset, job, fps }: Props) {
           {dataset ? (
             <>
               <div><span className="info-label">Dataset:</span> {dataset.name}</div>
-              <div><span className="info-label">Status:</span> {dataset.status}</div>
+              <div><span className="info-label">Status:</span> {dataset.status}
+                {job && (job.status === "processing" || job.status === "pending") && (
+                  <span style={{ marginLeft: 8, color: "#58a6ff" }}>{job.progress.toFixed(0)}%</span>
+                )}
+              </div>
+              {job && job.status === "failed" && job.error && (
+                <div style={{ color: "#ff5555", marginTop: 4, fontSize: "0.85em", whiteSpace: "pre-wrap", maxHeight: 120, overflowY: "auto" }}>
+                  <span className="info-label">Error:</span> {job.error}
+                </div>
+              )}
               {dataset.point_count && <div><span className="info-label">Points:</span> {dataset.point_count.toLocaleString()}</div>}
               {dataset.crs && <div><span className="info-label">CRS:</span> {dataset.crs}</div>}
               {dataset.file_size && <div><span className="info-label">Size:</span> {(dataset.file_size / 1e9).toFixed(2)} GB</div>}
-              {job && job.status === "processing" && <div><span className="info-label">Converting:</span> {job.progress.toFixed(0)}%</div>}
             </>
           ) : (
             <div>No dataset selected</div>

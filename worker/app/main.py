@@ -40,8 +40,13 @@ def poll_and_process():
         logger.info(f"Processing dataset {dataset.id}: {dataset.filename}")
         input_path = UPLOAD_DIR / dataset.id / dataset.filename
         output_dir = CONVERTED_DIR / dataset.id
+
+        def update_progress(pct: float):
+            job.progress = pct
+            db.commit()
+
         try:
-            run_potree_converter(input_path, output_dir)
+            run_potree_converter(input_path, output_dir, on_progress=update_progress)
             job.status = JobStatus.complete
             job.progress = 100.0
             job.completed_at = datetime.now(timezone.utc)

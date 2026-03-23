@@ -12,6 +12,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
   const [job, setJob] = useState<Job | null>(null);
+  const [jobs, setJobs] = useState<Record<string, Job>>({});
   const [showUpload, setShowUpload] = useState(false);
 
   const refreshDatasets = useCallback(() => {
@@ -20,25 +21,41 @@ export default function App() {
 
   useEffect(() => { refreshDatasets(); }, [refreshDatasets]);
 
+  // Fetch job for selected dataset
   useEffect(() => {
     if (!selectedId) { setSelectedDataset(null); setJob(null); return; }
     getDataset(selectedId).then(setSelectedDataset).catch(console.error);
-    getJob(selectedId).then(setJob).catch(() => setJob(null));
+    getJob(selectedId).then((j) => { setJob(j); setJobs((prev) => ({ ...prev, [selectedId]: j })); }).catch(() => setJob(null));
   }, [selectedId]);
 
+  // Poll jobs for all in-progress datasets (updates toolbar labels)
   useEffect(() => {
-    if (!job || (job.status !== "pending" && job.status !== "processing")) return;
-    const interval = setInterval(() => {
-      getJob(job.dataset_id).then((j) => {
-        setJob(j);
-        if (j.status === "complete" || j.status === "failed") {
-          refreshDatasets();
-          if (j.status === "complete") getDataset(j.dataset_id).then(setSelectedDataset);
-        }
-      });
-    }, 3000);
+    const activeIds = datasets
+      .filter((d) => d.status === "processing" || d.status === "uploaded")
+      .map((d) => d.id);
+    if (activeIds.length === 0) return;
+
+    const poll = () => {
+      for (const id of activeIds) {
+        getJob(id)
+          .then((j) => {
+            setJobs((prev) => ({ ...prev, [id]: j }));
+            if (id === selectedId) setJob(j);
+            if (j.status === "complete" || j.status === "failed") {
+              refreshDatasets();
+              if (j.status === "complete" && id === selectedId) {
+                getDataset(id).then(setSelectedDataset);
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 3000);
     return () => clearInterval(interval);
-  }, [job, refreshDatasets]);
+  }, [datasets, selectedId, refreshDatasets]);
 
   const handleUploadComplete = (datasetId: string) => {
     setShowUpload(false);
@@ -48,7 +65,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Toolbar datasets={datasets} selectedId={selectedId} onSelect={setSelectedId} onUploadClick={() => setShowUpload(true)} />
+      <Toolbar datasets={datasets} selectedId={selectedId} onSelect={setSelectedId} onUploadClick={() => setShowUpload(true)} jobs={jobs} />
       <div className="main">
         <Sidebar dataset={selectedDataset} job={job} fps={0} onSettingsChange={() => {}} />
         <div className="viewer">
