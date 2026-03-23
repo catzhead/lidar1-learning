@@ -104,6 +104,7 @@ podman-compose up api worker   # backend only (frontend dev server separate)
 | POST | `/api/datasets/upload` | Upload LAZ file (chunked) |
 | GET | `/api/datasets` | List all datasets with status |
 | GET | `/api/datasets/{id}` | Dataset details + conversion status |
+| GET | `/api/datasets/{id}/download` | Download original LAZ at full precision |
 | DELETE | `/api/datasets/{id}` | Remove dataset and converted files |
 | GET | `/api/datasets/{id}/job` | Conversion job progress |
 
@@ -204,6 +205,17 @@ The host machine has 8GB RAM total, shared between OS, containers, and PotreeCon
 - `worker` (PotreeConverter): 4GB cap — PotreeConverter 2.0 is memory-aware and can be configured with `--memory-limit`; it processes in chunks and flushes to disk
 
 **Upload handling:** The API must stream upload chunks directly to disk. No in-memory buffering of the full file. Each chunk (~10MB) is written immediately and the memory is freed.
+
+### Data Preservation
+
+**Raw LAZ files are the source of truth.** They are stored at full sensor precision and never modified or deleted by the conversion pipeline. The Potree octree is a derived, lossy visualization artifact — it can be regenerated or discarded without data loss.
+
+This means:
+- `/data/uploads/{dataset_id}/` contains the original LAZ file at full precision, permanently
+- `/data/converted/{dataset_id}/` contains the Potree octree, which may be lower resolution
+- The API exposes a download endpoint (`GET /api/datasets/{id}/download`) to retrieve the original LAZ file at full precision
+- Deleting converted tiles to reclaim space is safe — re-conversion from the original is always possible
+- The viewer shows a reduced representation; it is not the authoritative copy of the data
 
 **Conversion:** PotreeConverter 2.0 supports a `--memory-limit` flag to cap its working set. For a 28GB LAZ file on 8GB RAM, it will do multiple passes over the data, trading speed for memory. This is the expected mode of operation for large datasets on small machines.
 
