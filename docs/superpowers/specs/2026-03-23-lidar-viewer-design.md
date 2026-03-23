@@ -75,6 +75,8 @@ podman-compose.yml
                   └────────────────────────────────┘
 ```
 
+**Multi-arch builds (ARM64 + AMD64):** Dev machine is M3 MacBook Air (ARM), VPS is x86. All Dockerfiles use multi-stage builds and compile PotreeConverter from source per-arch. Use `podman build --platform` for cross-arch when needed.
+
 **Kube-ready properties:**
 - All containers are stateless — state lives in the shared volume
 - Shared volume → PersistentVolumeClaim on Kube (or S3/MinIO for object storage)
