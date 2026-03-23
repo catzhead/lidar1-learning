@@ -128,10 +128,11 @@ def delete_dataset(dataset_id: str, db: Session = Depends(get_db)):
     dataset = db.query(Dataset).filter(Dataset.id == dataset_id).first()
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
-    # Delete files
-    dataset_dir = settings.upload_dir / dataset_id
-    if dataset_dir.exists():
-        shutil.rmtree(dataset_dir)
+    # Delete files (uploads and converted output)
+    for base_dir in [settings.upload_dir, settings.converted_dir]:
+        d = base_dir / dataset_id
+        if d.exists():
+            shutil.rmtree(d)
     # Delete from DB (job first due to FK)
     if dataset.job:
         db.delete(dataset.job)

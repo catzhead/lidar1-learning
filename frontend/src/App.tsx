@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { listDatasets, getDataset, getJob } from "./api/client";
+import { listDatasets, getDataset, getJob, deleteDataset } from "./api/client";
 import type { Dataset, Job } from "./types/dataset";
 import Toolbar from "./components/Toolbar";
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -63,9 +63,21 @@ export default function App() {
     setSelectedId(datasetId);
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDataset(id);
+      if (selectedId === id) {
+        setSelectedId(null);
+      }
+      refreshDatasets();
+    } catch (err) {
+      console.error("Failed to delete dataset:", err);
+    }
+  };
+
   return (
     <div className="app">
-      <Toolbar datasets={datasets} selectedId={selectedId} onSelect={setSelectedId} onUploadClick={() => setShowUpload(true)} jobs={jobs} />
+      <Toolbar datasets={datasets} selectedId={selectedId} onSelect={setSelectedId} onUploadClick={() => setShowUpload(true)} onDelete={handleDelete} jobs={jobs} />
       <div className="main">
         <Sidebar dataset={selectedDataset} job={job} fps={0} onSettingsChange={() => {}} />
         <div className="viewer">
