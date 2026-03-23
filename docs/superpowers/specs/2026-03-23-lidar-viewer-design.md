@@ -11,6 +11,7 @@ A web application for visualizing LiDAR point cloud datasets, matching the featu
 - Match LidarMill's feature set: appearance controls, measurement tools, classification filtering, scene info
 - Containerized architecture (Podman) that scales to Kubernetes
 - Handle datasets up to 100GB+
+- Run within 8GB RAM (MacBook Air dev, VPS production)
 
 ## Non-Goals (v1)
 
@@ -192,6 +193,23 @@ App
 - `error` (text, nullable)
 - `started_at` (timestamp, nullable)
 - `completed_at` (timestamp, nullable)
+
+## Memory Constraints (8GB RAM)
+
+The host machine has 8GB RAM total, shared between OS, containers, and PotreeConverter. This is the primary resource constraint and shapes several design decisions.
+
+**Container memory limits (podman-compose):**
+- `frontend` (nginx): 128MB — static file serving, negligible memory
+- `api` (FastAPI): 512MB — handles uploads via streaming (never buffers full file in memory)
+- `worker` (PotreeConverter): 4GB cap — PotreeConverter 2.0 is memory-aware and can be configured with `--memory-limit`; it processes in chunks and flushes to disk
+
+**Upload handling:** The API must stream upload chunks directly to disk. No in-memory buffering of the full file. Each chunk (~10MB) is written immediately and the memory is freed.
+
+**Conversion:** PotreeConverter 2.0 supports a `--memory-limit` flag to cap its working set. For a 28GB LAZ file on 8GB RAM, it will do multiple passes over the data, trading speed for memory. This is the expected mode of operation for large datasets on small machines.
+
+**Viewer (browser-side):** Potree's point budget is the main lever. Default to 2-5M points (not 10M) to keep browser memory reasonable. The octree LOD system means only visible tiles at the current zoom level are loaded — the full dataset is never in browser memory.
+
+**No concurrent conversions:** The worker processes one job at a time. Running two PotreeConverter instances on 8GB RAM would OOM. Jobs queue and run sequentially.
 
 ## Error Handling
 
