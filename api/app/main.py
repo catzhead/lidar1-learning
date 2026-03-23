@@ -11,6 +11,10 @@ async def lifespan(app: FastAPI):
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
     settings.converted_dir.mkdir(parents=True, exist_ok=True)
     Path(settings.db_url.replace("sqlite:///", "")).parent.mkdir(parents=True, exist_ok=True)
+    # Auto-create tables on startup (v1 — replaced by alembic in production)
+    from app.db import engine, Base
+    from app.models import Dataset, Job  # noqa: F401
+    Base.metadata.create_all(bind=engine)
     yield
 
 app = FastAPI(title="LiDAR Viewer API", lifespan=lifespan)
