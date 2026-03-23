@@ -219,7 +219,12 @@ This means:
 
 **Conversion:** PotreeConverter 2.0 supports a `--memory-limit` flag to cap its working set. For a 28GB LAZ file on 8GB RAM, it will do multiple passes over the data, trading speed for memory. This is the expected mode of operation for large datasets on small machines.
 
-**Viewer (browser-side):** Potree's point budget is the main lever. Default to 2-5M points (not 10M) to keep browser memory reasonable. The octree LOD system means only visible tiles at the current zoom level are loaded — the full dataset is never in browser memory.
+**Viewer (browser-side, target 60fps, minimum 40fps):** Potree's point budget is the main lever. The viewer must maintain at least 40fps during orbit/pan/zoom, targeting 60fps. On an 8GB MacBook Air (integrated GPU), this means:
+- Default point budget: 2M points (adjustable via sidebar)
+- Auto-adaptive: if frame rate drops below 40fps, automatically reduce point budget until it recovers
+- Eye Dome Lighting adds ~10-15% GPU cost — disable automatically if it pushes below 40fps
+- The octree LOD system means only visible tiles at the current zoom level are loaded — the full dataset is never in browser memory
+- FPS counter shown in Scene panel during development (toggleable)
 
 **No concurrent conversions:** The worker processes one job at a time. Running two PotreeConverter instances on 8GB RAM would OOM. Jobs queue and run sequentially.
 
