@@ -13,7 +13,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.172.0",
-    "potree-core": "^1.2.0"
+    "potree-core": "^2.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
