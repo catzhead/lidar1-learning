@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { listDatasets } from "./api/client";
 import type { Dataset } from "./types/dataset";
+import ViewerCanvas from "./components/ViewerCanvas";
 import "./App.css";
 
 export default function App() {
@@ -33,11 +34,7 @@ export default function App() {
           <p style={{ padding: 16, color: "#888" }}>Sidebar panels (next task)</p>
         </aside>
         <div className="viewer">
-          {selectedId ? (
-            <p>Viewer for {selectedId} (next task)</p>
-          ) : (
-            <p>Select or upload a dataset to begin</p>
-          )}
+          <ViewerCanvas datasetId={selectedId} />
         </div>
       </div>
     </div>
