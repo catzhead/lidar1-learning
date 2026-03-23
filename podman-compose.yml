@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./data:/data:ro
+    depends_on:
+      - api
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/data
+    environment:
+      - LIDAR_DB_URL=sqlite:////data/db/lidar.db
+      - LIDAR_UPLOAD_DIR=/data/uploads
+      - LIDAR_CONVERTED_DIR=/data/converted
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    volumes:
+      - ./data:/data
+    environment:
+      - LIDAR_DB_URL=sqlite:////data/db/lidar.db
+      - LIDAR_UPLOAD_DIR=/data/uploads
+      - LIDAR_CONVERTED_DIR=/data/converted
+      - LIDAR_POLL_INTERVAL=5
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
