@@ -1,0 +1,23 @@
+# Data
+data/
+dataset/
+
+# Superpowers brainstorm sessions
+.superpowers/
+
+# Node
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
